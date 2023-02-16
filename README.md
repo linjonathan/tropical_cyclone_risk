@@ -9,7 +9,7 @@ If you know what you are doing and familiar with Python packages, here is a quic
     conda env create -f environment.yml
     conda activate tc_risk
     pip install cdsapi
-    [generate _cdsapirc_ file in home directory]
+    [generate .cdsapirc file in home directory]
     python3 scripts/download_era5.py
     python3 run.py GL
 
