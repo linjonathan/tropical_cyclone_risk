@@ -1,0 +1,18 @@
+name: tc_risk
+channels:
+  - defaults
+dependencies:
+  - pip
+  - numpy
+  - basemap
+  - cartopy
+  - netcdf4
+  - dask
+  - matplotlib
+  - scipy
+  - xarray
+  - cftime
+  - python
+  - pip:
+    - cdsapi
+    - global-land-mask
