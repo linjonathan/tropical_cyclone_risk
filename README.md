@@ -9,7 +9,7 @@ If you know what you are doing and familiar with Python packages, here is a quic
     conda env create -f environment.yml
     conda activate tc_risk
     pip install cdsapi
-    [generate _cdsapirc_ file in home directory]
+    [generate .cdsapirc file in home directory]
     python3 scripts/download_era5.py
     python3 run.py GL
 
@@ -54,7 +54,7 @@ After this, run the script [download_era5.py](scripts/download_era5.py) from the
 Unfortunately, we have not tested the model on the reanalysis datasets of other modeling centers.
 
 ### CMIP6 Model Data
-While the original manuscript does not make any climate projections with the downscaling model, we provide an example script, [download_cmip6.py](scripts/download_cmip6.py], to download and organize CMIP6 model. There is no additional account creation necessary. 
+While the original manuscript does not make any climate projections with the downscaling model, we provide an example script, [download_cmip6.py](scripts/download_cmip6.py), to download and organize CMIP6 model. There is no additional account creation necessary. 
 
 ### Formatting Input
 The input data needs to be formatted in relatively loose way. For a variable <code>VAR</code> In the directory <code>namelist.base_directory</code>, it finds all files that match <code>\*namelist.exp_prefix\*VAR\*.nc</code>. The files can be in organized sub-directories (such as sub-directories by year of data), or any other way that is easy for the user. The variables in the netCDF files should contain timestamps that makes them amenable to multifile dataset reading in xarray. Typically, there is nothing extra that needs to be done when downloading ERA5 reanalysis or CMIP6 climate model output.
