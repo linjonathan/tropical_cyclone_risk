@@ -74,6 +74,8 @@ Every modeling center, however, has different naming conventions for variables. 
 
 For instance, the specific humidity is named 'q' in the ERA5 datasets, so we set the key-value pair 'sp_hum' and 'q' in the 'ERA5' (which is specified by <code>namelist.dataset_type</code>) entry in <code>namelist.var_keys</code>.
 
+Note, when using CMIP6 model data, some GCMs use non-rectangular horizontal coordinates. The interpolation code expects rectangular grids, so you will need to regrid the NetCDF files into rectanguular coordinate. The _cdo_ library is convenient for this. In addition, some vertical grids are output in sigma coordinates. You will need the vertical grid in pressure coordinates.
+
 ## Running the Model
 We have provided a simple script, [run.py](run.py), to run the model.
 
