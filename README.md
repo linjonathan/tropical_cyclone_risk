@@ -106,6 +106,10 @@ The tropical cyclone tracks will be output in a netCDF file. These netCDF files 
 ## Potential Intensity
 The model also includes a new, CAPE-based method to calculate potential intensity. The [thermo.py](thermo/thermo.py) is a file that only depends on the [constants.py](util/constants.py) file, and contains the functions to calculate potential intensity. The function, <code>CAPE_PI</code> is written in a transparent and straightforward way. There is also a vectorized method that is fast to use, but less readable than the non-vectorized code, <code>CAPE_PI_vectorized</code>.
 
+## 24-Hour Intensity Change Distribution
+![image](https://github.com/linjonathan/tropical_cyclone_risk/assets/7074325/ddc7fe57-bb42-4b5f-91ed-b3f3e82d0639)
+
+
 ## Code Contributions
 Jonathan Lin  
 Raphael Rousseau-Rizzi
