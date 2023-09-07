@@ -1,7 +1,7 @@
 # An Open-Source, Physics-Based, Tropical Cyclone Downscaling Model with Intensity-Dependent Steering
 This is a publicly available, statistical-dynamical tropical cyclone downscaling model, and a derivative of the MIT tropical cyclone downscaling model. It is composed of three primary components: (1) a random seeding process that determines genesis, (2) an intensity-dependent beta-advection model that determines the track, and (3) a non-linear differential equation set that determines the intensification rate. The model is entirely forced by the large-scale environment. Downscaling ERA5 reanalysis data shows that the model is generally able to reproduce observed tropical cyclone climatology, such as the global seasonal cycle, genesis locations, track density, and lifetime maximum intensity distributions. Inter-annual variability in tropical cyclone count and power-dissipation is also well captured, on both basin-wide and global scales. The model is also able to reasonably capture the observed return period curves of landfall intensity in various sub-basins around the globe. The incorporation of an intensity-dependent steering flow is shown to lead to regionally dependent changes in power dissipation and return periods.
 
-Citation: [Lin et al. (2023)](https://arxiv.org/abs/2302.09455) (in review)
+Citation: [Lin et al. (2023)](https://arxiv.org/abs/2302.09455) (accepted to JAMES)
 
 ## Quick Start: TLDR
 If you know what you are doing and familiar with Python packages, here is a quick start command list to get the model running.
