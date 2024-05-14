@@ -116,7 +116,7 @@ Jonathan Lin
 Raphael Rousseau-Rizzi
 
 ## Version History
-Version 1.1 (2024-05-14) - see release notes
+Version 1.1 (2024-05-14) - see release notes  
 Version 1.0 (2023-02-17) - model released
 
 [![DOI](https://zenodo.org/badge/602773936.svg)](https://zenodo.org/badge/latestdoi/602773936)
