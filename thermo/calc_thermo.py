@@ -46,7 +46,7 @@ def compute_thermo(dt_start, dt_end):
         ta = ds_ta[input.get_temp_key()][i, :, :, :]
         hus = ds_hus[input.get_sp_hum_key()][i, :, :, :]
         lvl = ds_ta[input.get_lvl_key()]
-        lvl_d = ds_ta[input.get_lvl_key()].data
+        lvl_d = np.copy(ds_ta[input.get_lvl_key()].data)
 
         # Ensure lowest model level is first.
         # Here we assume the model levels are in pressure.
@@ -55,24 +55,31 @@ def compute_thermo(dt_start, dt_end):
             hus = hus.reindex({input.get_lvl_key(): lvl[::-1]})
             lvl_d = lvl_d[::-1]
     
-        p_midlevel = namelist.p_midlevel                # Pa
+        p_midlevel = namelist.p_midlevel                    # Pa
         if lvl.units in ['millibars', 'hPa']:
-            lvl_d *= 100
+            lvl_d *= 100                                    # needs to be in Pa
             p_midlevel = namelist.p_midlevel / 100          # hPa
+            lvl_mid = lvl.sel({input.get_lvl_key(): p_midlevel}, method = 'nearest')
 
         # TODO: Check units of psl, ta, and hus
         vmax_args = (sst_interp, psl.data, lvl_d, ta.data, hus.data)
         vmax[i, :, :] = thermo.CAPE_PI_vectorized(*vmax_args)
-        ta_midlevel = ta.sel({input.get_lvl_key(): p_midlevel}).data
-        hus_midlevel = hus.sel({input.get_lvl_key(): p_midlevel}).data
+        ta_midlevel = ta.sel({input.get_lvl_key(): p_midlevel}, method = 'nearest').data
+        hus_midlevel = hus.sel({input.get_lvl_key(): p_midlevel}, method = 'nearest').data
+
+        p_midlevel_Pa = float(lvl_mid) * 100 if lvl_mid.units in ['millibars', 'hPa'] else float(lvl_mid)
         chi_args = (sst_interp, psl.data, ta_midlevel,
-                    namelist.p_midlevel, hus_midlevel)
+                    p_midlevel_Pa, hus_midlevel)
         chi[i, :, :] = np.minimum(np.maximum(thermo.sat_deficit(*chi_args), 0), 10)
-        rh_mid[i, :, :] = thermo.conv_q_to_rh(ta_midlevel, hus_midlevel, namelist.p_midlevel)
+        rh_mid[i, :, :] = thermo.conv_q_to_rh(ta_midlevel, hus_midlevel, p_midlevel_Pa)
 
     return (vmax, chi, rh_mid)
 
 def gen_thermo():
+    # TODO: Assert all of the datasets have the same length in time.
+    if os.path.exists(get_fn_thermo()):
+        return
+
     # Load datasets metadata. Since SST is split into multiple files and can
     # cause parallel reads with open_mfdataset to hang, save as a single file.
     dt_start, dt_end = input.get_bounding_times()
@@ -83,14 +90,10 @@ def gen_thermo():
                    np.array([x for x in input.convert_to_datetime(ds, ds['time'].values)
                              if x >= ct_bounds[0] and x <= ct_bounds[1]]))
 
-    # TODO: Assert all of the datasets have the same length in time.
-    if os.path.exists(get_fn_thermo()):
-        return
-
     n_chunks = namelist.n_procs
-    chunks = np.array_split(ds_times, n_chunks)
+    chunks = np.array_split(ds_times, np.minimum(n_chunks, np.floor(len(ds_times) / 2)))
     lazy_results = []
-    for i in range(n_chunks):
+    for i in range(len(chunks)):
         lazy_result = dask.delayed(compute_thermo)(chunks[i][0], chunks[i][-1])
         lazy_results.append(lazy_result)
     out = dask.compute(*lazy_results, scheduler = 'processes', num_workers = n_chunks)
