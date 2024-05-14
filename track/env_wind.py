@@ -51,18 +51,21 @@ def deep_layer_winds(env_wnds):
     u250 = env_wnds[:, var_names.index('ua250_Mean')]
     v250 = env_wnds[:, var_names.index('va250_Mean')]
     u850 = env_wnds[:, var_names.index('ua850_Mean')]
-    v850 = env_wnds[:, var_names.index('va850_Mean')]   
+    v850 = env_wnds[:, var_names.index('va850_Mean')]
     return (u250, v250, u850, v850)
 
 """
 Read the mean and covariance of the upper/lower level zonal and meridional winds.
 """
-def read_env_wnd_fn(fn_wnd_stat):
+def read_env_wnd_fn(fn_wnd_stat, dt_s = None, dt_e = None):
     var_Mean = wind_mean_vector_names()
     var_Var = wind_cov_matrix_names()
 
-    ds = xr.open_dataset(fn_wnd_stat)
-    wnd_Mean = [ds[x] for x in var_Mean] 
+    if dt_s is None:
+        ds = xr.open_dataset(fn_wnd_stat)
+    else:
+        ds = xr.open_dataset(fn_wnd_stat).sel(time = slice(dt_s, dt_e))
+    wnd_Mean = [ds[x] for x in var_Mean]
     wnd_Cov = [['' for i in range(len(var_Mean))] for j in range(len(var_Mean))]
     for i in range(len(var_Mean)):
         for j in range(len(var_Mean)):
@@ -88,7 +91,7 @@ def gen_wind_mean_cov():
     fns_va = input._glob_prefix(input.get_v_key())
 
     lazy_results = []
-    for i in range(len(fns_ua)):
+    for i in range(min(len(fns_ua), len(fns_va))):
         lazy_result = dask.delayed(wnd_stat_wrapper)((fns_ua[i], fns_va[i]))
         lazy_results.append(lazy_result)
     out = dask.compute(*lazy_results)
@@ -180,23 +183,34 @@ def calc_wnd_stat(ua, va, dt):
     else:
         p_upper = 25000; p_lower = 85000;
 
-    # TODO: Average over daily timescales.
-    ua250_month = ua.sel({input.get_lvl_key(): p_upper}).sel(time = month_mask)
-    va250_month = va.sel({input.get_lvl_key(): p_upper}).sel(time = month_mask)
-    ua850_month = ua.sel({input.get_lvl_key(): p_lower}).sel(time = month_mask)
-    va850_month = va.sel({input.get_lvl_key(): p_lower}).sel(time = month_mask)
+    # If time step is less than one day, group by day.
+    dt_step = (np.timedelta64(1, 'D') - (ua['time'][1] - ua['time'][0]).data) / np.timedelta64(1, 's')
+    if dt_step < 0:
+        ua_month = ua.sel(time = month_mask).groupby("time.day").mean(dim = 'time')
+        va_month = va.sel(time = month_mask).groupby("time.day").mean(dim = 'time')
+        t_unit = 'day'
+    else:
+        ua_month = ua.sel(time = month_mask)
+        va_month = va.sel(time = month_mask)
+        t_unit = 'time'
+
+    # Compute the daily averages
+    ua250_month = ua_month.sel({input.get_lvl_key(): p_upper})
+    va250_month = va_month.sel({input.get_lvl_key(): p_upper})
+    ua850_month = ua_month.sel({input.get_lvl_key(): p_lower})
+    va850_month = va_month.sel({input.get_lvl_key(): p_lower})
 
     month_wnds = [ua250_month, va250_month,
                   ua850_month, va850_month]
     month_mean_wnds = [0] * len(month_wnds)
     month_var_wnds = [[np.empty(0) for i in range(len(month_wnds))] for j in range(len(month_wnds))]
     for i in range(len(month_wnds)):
-        month_mean_wnds[i] = month_wnds[i].mean(dim = "time")
+        month_mean_wnds[i] = month_wnds[i].mean(dim = t_unit)
         for j in range(0, i+1):
             if i == j:
-                month_var_wnds[i][j] = month_wnds[i].var(dim = "time")
+                month_var_wnds[i][j] = month_wnds[i].var(dim = t_unit)
             else:
-                month_var_wnds[i][j] = xr.cov(month_wnds[i], month_wnds[j], dim = "time")
+                month_var_wnds[i][j] = xr.cov(month_wnds[i], month_wnds[j], dim = t_unit)
 
     wnd_vars = [[x for x in y if len(x) > 0] for y in month_var_wnds]
     stats = sum(wnd_vars, month_mean_wnds)
