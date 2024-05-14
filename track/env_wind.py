@@ -5,7 +5,7 @@ import os
 import xarray as xr
 
 import namelist
-from util import constants, input, sphere
+from util import input
 
 """
 Returns the name of the file containing environmental wind statistics.
