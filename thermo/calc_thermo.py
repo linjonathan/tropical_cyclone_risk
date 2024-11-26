@@ -112,6 +112,6 @@ def gen_thermo():
                                             rh_mid = (['time', 'lat', 'lon'], rh_mid)),
                            coords = dict(lon = ("lon", ds[input.get_lon_key()].data),
                                          lat = ("lat", ds[input.get_lat_key()].data),
-                                         time = ("time", ds_times)))
+                                         time = ("time", ds_times.astype('datetime64[ns]'))))
     ds_thermo.to_netcdf(get_fn_thermo())
     print('Saved %s' % get_fn_thermo())

@@ -22,6 +22,10 @@ Driver function to compute zonal and meridional wind monthly mean and
 covariances, potential intensity, GPI, and saturation deficit.
 """
 def compute_downscaling_inputs():
+    if namelist.file_type == 'grib':
+        print('Preprocessing .grib files...')
+        input.preprocess_grib()
+    
     print('Computing monthly mean and variance of environmental wind...')
     s = time.time()
     env_wind.gen_wind_mean_cov()
@@ -106,7 +110,7 @@ def run_tracks(year, n_tracks, b):
     ds_wnd = xr.open_dataset(fn_wnd_stat)
     for i in range(12):
         dt_month = datetime.datetime(year, i + 1, 15)
-        ds_dt_month = input.convert_from_datetime(ds_wnd, [dt_month])[0]
+        ds_dt_month = input.convert_from_datetime(ds_wnd, [dt_month])[0].astype('datetime64[ns]')
         vpot_month = np.nan_to_num(vpot.interp(time = ds_dt_month).data, 0)
         rh_mid_month = rh_mid.interp(time = ds_dt_month).data
         chi_month = chi.interp(time = ds_dt_month).data

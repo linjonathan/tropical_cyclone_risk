@@ -155,7 +155,7 @@ def wnd_stat_wrapper(args):
                           dims = ['time', 'stat', 'lat', 'lon'],
                           coords = dict(lon = ("lon", ds_ua[input.get_lon_key()].data),
                                         lat = ("lat", ds_ua[input.get_lat_key()].data),
-                                        time = ("time", input.convert_from_datetime(ds_ua, t_months))))
+                                        time = ("time", input.convert_from_datetime(ds_ua, t_months).astype('datetime64[ns]'))))
     ds_wnd = da_wnd.to_dataset(name='wnd_stats')
     fn_ds_wnd = '%s/env_wnd_%s_p%d%02d_%d%02d.nc' % (namelist.output_directory, namelist.exp_prefix,
                                                      t_months[0].year, t_months[0].month,

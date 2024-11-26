@@ -13,15 +13,34 @@ import numpy as np
 import xarray as xr
 import namelist
 
+def preprocess_grib():
+    fns = glob.glob('%s/**/*%s*.grib' % (namelist.base_directory, namelist.exp_prefix), recursive = True)
+    for fn in fns:
+        idx_fns = glob.glob('%s*.idx' % fn)
+        if len(idx_fns) == 0:
+            # Generate the .idx file in a preprocessing step,
+            # which has overhead and causes issues if you
+            # try to open multiple .grib files in parallel.
+            ds = xr.open_dataset(fn)
+            ds.close()
+
 def _open_fns(fns):
     if len(fns) == 1:
         ds = xr.open_dataset(fns[0])
     else:
-        ds = xr.open_mfdataset(fns, concat_dim = "time", combine = "nested", data_vars="minimal")
+        ds = xr.open_mfdataset(fns, concat_dim = "time", combine='nested',
+                               data_vars="minimal", drop_variables=['nbdate'])
     return ds
 
 def _glob_prefix(var_prefix):
-    fns = glob.glob('%s/**/*%s*.nc' % (namelist.base_directory, namelist.exp_prefix), recursive = True)
+    if namelist.file_type == 'netcdf':
+        ext = 'nc'
+    elif namelist.file_type == 'grib':
+        ext = 'grib'
+    else:
+        raise RuntimeError('File type %s not supported' % namelist.file_type)
+
+    fns = glob.glob('%s/**/*%s*.%s' % (namelist.base_directory, namelist.exp_prefix, ext), recursive = True)
     fns_var = sorted([x for x in fns if '_%s_' % var_prefix in x])
     if len(fns_var) == 0:
         fns_var = sorted([x for x in fns if '%s_' % var_prefix in x])
