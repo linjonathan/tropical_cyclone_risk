@@ -31,6 +31,9 @@ class Coupled_FAST(bam_track.BetaAdvectionTrack):
         self.f_land = geo.read_land(basin)
         self.debug = False
 
+        # Variable drag coefficient
+        self.f_Cd = geo.read_drag(basin)
+
     """ Return if over land (True) or ocean (False) """
     def _get_over_land(self, clon, clat):
         # 9/2/2020: Changed to 1 (and not a rounded number), since PI
@@ -44,6 +47,10 @@ class Coupled_FAST(bam_track.BetaAdvectionTrack):
     """ Return the current mixed layer depth at a position. """
     def _get_current_mixed(self, clon, clat):
         return self.f_mld.ev(clon, clat).flatten()[0]
+
+    """ Return the current drag coefficient at a position. """
+    def _get_current_Cd(self, clon, clat):
+        return (self.f_Cd.ev(clon, clat).flatten()[0])
 
     """ Return the current sub-mixed layer thermal stratification, (K / 100 m)
         at time t_s."""
@@ -143,10 +150,16 @@ class Coupled_FAST(bam_track.BetaAdvectionTrack):
         alpha = self._calc_alpha(clon, clat, v_trans, v)
         gamma = self._calc_gamma(alpha)
         beta = self._calc_beta()
+        # In Emanuel (2012), Emanuel (2017), there are differing expressions for
+        # the intensification rate. It seems Ck and Cd are used interchangeably.
+        # Here, in lieu of Ck, we use Cd, and include a variable drag coefficient 
+        # to represent faster decay over land.
+        Cd = self._get_current_Cd(clon, clat)
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            dvdt = (0.5 * self.Ck / self.h_bl * (alpha * beta * (v_pot ** 2) * (m ** 3) -
-                                                      (1 - gamma * (m ** 3)) * (v ** 2)))
+            dvdt = (0.5 * Cd / self.h_bl * (alpha * beta * (v_pot ** 2) * (m ** 3) -
+                                                 (1 - gamma * (m ** 3)) * (v ** 2)))
         return dvdt if ~np.isnan(dvdt) else 0
 
     """ Initializes m if no m has been given. Assumes an initial dvdt. """
@@ -162,7 +175,7 @@ class Coupled_FAST(bam_track.BetaAdvectionTrack):
         gamma = self._calc_gamma(alpha)
         beta = self._calc_beta()
 
-        numer = 2 * self.h_bl / self.Ck * dvdt + (y[2] ** 2)
+        numer = 2 * self.h_bl / self.Cd * dvdt + (y[2] ** 2)
         denom = alpha * beta * (v_pot ** 2) + gamma * (y[2] ** 2)
         return(np.maximum(np.minimum(np.cbrt(numer / denom), 1), 0))
 
@@ -174,9 +187,15 @@ class Coupled_FAST(bam_track.BetaAdvectionTrack):
     """
     def _dmdt(self,  clon, clat, v, m, env_wnds, t):
         venti = self._calc_venti(t, clon, clat, env_wnds)
+        # In Emanuel (2012), Emanuel (2017), there are differing expressions for
+        # the intensification rate. It seems Ck and Cd are used interchangeably.
+        # Here, in lieu of Ck, we use Cd, and include a variable drag coefficient 
+        # to represent faster decay over land.
+        Cd = self._get_current_Cd(clon, clat)
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            dmdt = 0.5 * self.Ck / self.h_bl * ((1 - m) * v - venti * m)
+            dmdt = 0.5 * Cd / self.h_bl * ((1 - m) * v - venti * m)
         return(dmdt)
 
     """ Calculate the steering coefficients. """
