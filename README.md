@@ -13,7 +13,7 @@ If you know what you are doing and familiar with Python packages, here is a quic
     python3 scripts/download_era5.py
     python3 run.py GL
 
-You may use the Jupyter notebook [sample_analysis.py](notebooks/sample_analysis.py) to read in the output and make some simple plots.
+You may use the Jupyter notebook [sample_analysis.ipynb](notebooks/sample_analysis.ipynb) to read in the output and make some simple plots.
 
 ## Environment Set Up
 We strongly recommend creating a virtual environment to install the packages required to run this model. A very popular virtual environment/package manager is [Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html#). We have provided the [YAML file](environment.yml) that worked in our testing of the model.
