@@ -13,8 +13,11 @@ exp_name = 'test'
 # For now, we support either 'GCM' or 'ERA5'. Different file types and variable
 # names can be added by modifying the "input.py" file and adding the appropriate
 # variable key words in the structure var_keys.
+# file_type is the file type of the input files, and
+# can be either 'netcdf' or 'grib'
 dataset_type = 'ERA5' #'GCM'
 exp_prefix = 'era5' #GFDL-CM4_ssp585_r1i1p1f1'
+file_type = 'grib'
 
 # Variable naming based on dataset_type.
 # 'sst' is sea-surface temperature (monthly-averaged)
@@ -25,7 +28,7 @@ exp_prefix = 'era5' #GFDL-CM4_ssp585_r1i1p1f1'
 # 'v' is meridional wind (daily)
 var_keys = {'ERA5': {'sst': 'sst', 'mslp': 'sp', 'temp': 't',
                      'sp_hum': 'q', 'u': 'u', 'v': 'v',
-                     'lvl': 'level', 'lon': 'longitude', 'lat': 'latitude'},
+                     'lvl': 'isobaricInhPa', 'lon': 'longitude', 'lat': 'latitude'},
             'GCM': {'sst': 'tos', 'mslp': 'psl', 'temp': 'ta',
                     'sp_hum': 'hus', 'u': 'ua', 'v': 'va',
                     'lvl': 'plev', 'lon': 'lon', 'lat': 'lat'}}

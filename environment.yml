@@ -13,6 +13,8 @@ dependencies:
   - xarray
   - cftime
   - python
+  - -c conda-forge eccodes
+  - -c conda-forge cfgrib
   - pip:
     - cdsapi
     - global-land-mask

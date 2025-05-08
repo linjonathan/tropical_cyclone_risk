@@ -58,7 +58,7 @@ class BetaAdvectionTrack:
         self.v_beta = namelist.v_beta           # meridional beta drift speed
         self.nLvl = len(namelist.steering_levels)
         self.nWLvl = self.nLvl * 2
-        self.dt_start = dt_start
+        self.dt_start = dt_start.astype('datetime64[ns]')
         self.basin = basin
         self.var_names = env_wind.wind_mean_vector_names()
         self.u_Mean_idxs = np.zeros(self.nLvl).astype(int)

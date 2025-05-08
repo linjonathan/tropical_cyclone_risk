@@ -24,7 +24,7 @@ This requires conda to be installed, and should create a virtual environment wit
 
 If you prefer to do a clean install of the required packages, the following commands will create a virtual environment:
 
-    conda create -n tc_risk basemap cftime xarray numpy matplotlib cartopy python jupyter scipy netCDF4 dask
+    conda create -n tc_risk basemap cftime xarray numpy matplotlib cartopy python jupyter scipy netCDF4 dask eccodes cfgrib
     pip install global-land-mask cdsapi
 
 Note, not all Python packages are fully supported on Apple Silicon architecture yet.
