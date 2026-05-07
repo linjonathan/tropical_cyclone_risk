@@ -190,7 +190,7 @@ def calc_wnd_stat(ua, va, dt):
 
     # If time step is less than one day, group by day.
     dt_step = (np.timedelta64(1, 'D') - (ua['time'][1] - ua['time'][0]).data) / np.timedelta64(1, 's')
-    if dt_step < 0:
+    if dt_step > 0:
         ua_month = ua.sel(time = month_mask).groupby("time.day").mean(dim = 'time')
         va_month = va.sel(time = month_mask).groupby("time.day").mean(dim = 'time')
         t_unit = 'day'
